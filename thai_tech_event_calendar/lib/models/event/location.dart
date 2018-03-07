@@ -1,0 +1,10 @@
+class Location {
+  final String title;
+  final String url;
+  final String detail;
+
+  Location.fromJson(Map json)
+      : title = json['title'],
+        url = json['url'],
+        detail = json['detail'];
+}
