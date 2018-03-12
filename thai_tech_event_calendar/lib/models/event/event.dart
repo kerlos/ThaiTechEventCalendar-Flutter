@@ -19,7 +19,7 @@ class Event extends Object {
   List<Link> links = new List<Link>();
   List<Resource> resources = new List<Resource>();
   List<String> tags = new List<String>();
-  
+
   Event.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];

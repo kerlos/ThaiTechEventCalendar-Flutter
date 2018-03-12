@@ -1,13 +1,13 @@
 import 'dart:developer';
 import 'dart:io';
 import 'dart:convert';
-import 'package:thai_tech_event_calendar/models/event/event.dart';
 import 'dart:async';
 
-class EventClient extends Object {
+import '../models/event/event.dart';
 
+class EventClient extends Object {
   static final EventClient _eventClient = new EventClient._internal();
-  
+
   EventClient._internal();
 
   factory EventClient() {
@@ -15,12 +15,10 @@ class EventClient extends Object {
   }
 
   List<Event> data = new List<Event>();
-
+  HttpClient httpClient = new HttpClient();
   final String calendarBase = 'thaiprogrammer-tech-events-calendar.spacet.me';
   Future<List<Event>> loadData() async {
     data.clear();
-    debugger();
-    var httpClient = new HttpClient();
     var uri = new Uri.https(calendarBase, 'calendar.json');
     var request = await httpClient.getUrl(uri);
     var response = await request.close();
@@ -39,9 +37,7 @@ class EventClient extends Object {
 
   List<Event> getEvents() => data;
 
-  Event getEventById(String id){
-    
-    debugger();
+  Event getEventById(String id) {
     var result = data.firstWhere((item) => item.id == id);
     return result;
   }

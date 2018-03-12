@@ -1,5 +1,5 @@
 name: thai_tech_event_calendar
-description: A new Flutter project.
+description: Thai Tech Event Calendar App
 
 dependencies:
   flutter:
@@ -9,6 +9,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.0
   fluro: "^1.2.1"
+  font_awesome_flutter: 6.0.0
+  url_launcher: "^3.0.0"
   intl: "^0.15.2"
 
 dev_dependencies:

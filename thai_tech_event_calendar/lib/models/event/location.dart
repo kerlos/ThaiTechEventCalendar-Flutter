@@ -4,7 +4,7 @@ class Location {
   final String detail;
 
   Location.fromJson(Map json)
-      : title = json['title'],
-        url = json['url'],
-        detail = json['detail'];
+      : title = json['title'] != null ? json['title'] : "",
+        url = json['url'] != null ? json['url'] : "",
+        detail = json['detail'] != null ? json['detail'] : "";
 }

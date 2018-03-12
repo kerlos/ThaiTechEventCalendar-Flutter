@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
-import 'package:thai_tech_event_calendar/models/event/event.dart';
-import 'package:thai_tech_event_calendar/tte_event/event_list.dart';
+import 'models/event/event.dart';
+import 'tte_event/event_list.dart';
 import 'dart:developer';
 
 import 'configs/application.dart';
@@ -28,15 +28,15 @@ class AppState extends State<App> {
   void initState() {
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: 'Thai Tech Event',
-      theme: new ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: new HomePage(title: 'Thai Tech Event')
-    );
+        title: 'Thai Tech Event',
+        theme: new ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        home: new HomePage(title: 'Thai Tech Event'));
   }
 }
 
