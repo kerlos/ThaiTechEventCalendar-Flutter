@@ -18,7 +18,8 @@ class Event extends Object {
   List<Time> times = new List<Time>();
   List<Link> links = new List<Link>();
   List<Resource> resources = new List<Resource>();
-
+  List<String> tags = new List<String>();
+  
   Event.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     title = json['title'];
@@ -35,5 +36,7 @@ class Event extends Object {
         .forEach((value) => resources.add(new Resource.fromJson(value)));
     json['topics'].forEach((value) => topics.add(value));
     json['categories'].forEach((value) => categories.add(value));
+
+    tags = new List.from(categories)..addAll(topics);
   }
 }
