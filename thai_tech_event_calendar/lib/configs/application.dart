@@ -1,6 +1,5 @@
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
-import '../tte_event/event_client.dart';
 
 class Application {
   static Router router;

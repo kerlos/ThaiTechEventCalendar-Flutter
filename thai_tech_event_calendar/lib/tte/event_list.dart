@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
 import 'package:thai_tech_event_calendar/extensions/parser.dart';
 
 import '../configs/application.dart';
-import '../configs/routes.dart';
 import '../models/event/event.dart';
-import 'event_client.dart';
 
 class EventListItem extends StatefulWidget {
   final Event event;
@@ -38,21 +35,8 @@ class EventItemState extends State<EventListItem> {
       _highlight = false;
     });
     Application.router.navigateTo(context, "/events/${event.id}",
-        transition: TransitionType.custom,
-        transitionDuration: const Duration(milliseconds: 100),
-        transitionBuilder: (BuildContext context, Animation<double> animation,
-            Animation<double> secondaryAnimation, Widget child) {
-      const Offset topLeft = const Offset(0.0, 0.0);
-      const Offset topRight = const Offset(1.0, 0.0);
-      return new SlideTransition(
-        position: new Tween<Offset>(
-          begin: topRight,
-          end: topLeft,
-        )
-            .animate(animation),
-        child: child,
-      );
-    });
+        transition: TransitionType.native,
+        transitionDuration: const Duration(milliseconds: 100));
   }
 
   void _handleTapCancel() {
@@ -70,12 +54,16 @@ class EventItemState extends State<EventListItem> {
                 decoration: new BoxDecoration(
                     color: const Color(0xfffaf8d1),
                     borderRadius:
-                        new BorderRadius.all(const Radius.circular(4.0))),
-                padding: const EdgeInsets.all(4.0),
+                        new BorderRadius.all(const Radius.circular(4.0)),
+                    border: new Border.all(color: Colors.orange.shade100)),
+                padding: const EdgeInsets.all(2.0),
                 child: new Text(tag,
                     textScaleFactor: 0.8,
                     softWrap: true,
-                    style: new TextStyle(color: Application.mainColor)),
+                    style: new TextStyle(
+                        color: Application.mainColor,
+                        fontSize: 16.0,
+                        fontFamily: "Prompt")),
               ),
               new Padding(padding: const EdgeInsets.symmetric(horizontal: 2.0))
             ],
@@ -111,12 +99,18 @@ class EventItemState extends State<EventListItem> {
                                   textScaleFactor: 1.0,
                                   textAlign: TextAlign.left,
                                   style: new TextStyle(
+                                      fontFamily: "Prompt",
+                                      fontSize: 16.0,
                                       fontWeight: FontWeight.bold),
                                 ),
                                 new Text(
                                   Parser.parseEventDateName(event.startDate),
                                   textScaleFactor: 0.9,
                                   textAlign: TextAlign.left,
+                                  style: new TextStyle(
+                                      fontFamily: "Prompt",
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 new ListView.builder(
                                   shrinkWrap: true,
@@ -125,6 +119,9 @@ class EventItemState extends State<EventListItem> {
                                         "${event.times[i].from} ~ ${event.times[i].to} ${event.times[i].after ? '++' : ''}",
                                         textScaleFactor: 0.6,
                                         textAlign: TextAlign.left,
+                                        style: new TextStyle(
+                                            fontFamily: "Prompt",
+                                            fontSize: 16.0),
                                       ),
                                 )
                               ])),
@@ -138,15 +135,16 @@ class EventItemState extends State<EventListItem> {
                                   textScaleFactor: 0.9,
                                   textAlign: TextAlign.left,
                                   style: new TextStyle(
-                                    color: Application.mainColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                      fontFamily: "Prompt",
+                                      color: Application.mainColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18.0),
                                 ),
-                                new Text(
-                                  event.summary,
-                                  textScaleFactor: 0.85,
-                                  textAlign: TextAlign.left,
-                                ),
+                                new Text(event.summary,
+                                    textScaleFactor: 0.85,
+                                    textAlign: TextAlign.left,
+                                    style: new TextStyle(
+                                        fontFamily: "Prompt", fontSize: 16.0)),
                                 new Padding(
                                     padding: const EdgeInsets.only(top: 4.0)),
                                 eventTags()
@@ -161,13 +159,17 @@ class EventItemState extends State<EventListItem> {
 
 class EventList extends StatefulWidget {
   final List<Event> events;
-  EventList({Key key, this.events}) : super(key: key);
+  final Function onRefreshPull;
+  EventList({Key key, this.events, this.onRefreshPull}) : super(key: key);
 
   @override
-  State<StatefulWidget> createState() => new EventListState();
+  State<StatefulWidget> createState() => new EventListState(onRefreshPull);
 }
 
 class EventListState extends State<EventList> {
+  final Function onRefreshPull;
+  EventListState(this.onRefreshPull);
+
   @override
   void initState() {
     super.initState();
@@ -195,8 +197,7 @@ class EventListState extends State<EventList> {
             new Expanded(
                 child: new RefreshIndicator(
                     onRefresh: () {
-                      //TODO: add pull to refresh
-                      return new Future.value(null);
+                      return new Future.value(onRefreshPull());
                     },
                     child: new ListView.builder(
                       padding: const EdgeInsets.symmetric(vertical: 4.0),
@@ -210,6 +211,4 @@ class EventListState extends State<EventList> {
       ),
     );
   }
-
-  Future<Null> onRefresh() {}
 }

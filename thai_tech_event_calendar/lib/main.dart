@@ -1,14 +1,11 @@
-import 'dart:async';
-
 import 'package:fluro/fluro.dart';
 import 'package:flutter/material.dart';
+import 'managers/notification_manager.dart';
 import 'models/event/event.dart';
-import 'tte_event/event_list.dart';
-import 'dart:developer';
-
+import 'tte/event_list.dart';
 import 'configs/application.dart';
 import 'configs/routes.dart';
-import 'tte_event/event_client.dart';
+import 'tte/event_client.dart';
 
 void main() => runApp(new App());
 
@@ -22,6 +19,7 @@ class AppState extends State<App> {
     final router = new Router();
     Routes.configRoutes(router);
     Application.router = router;
+    new NotificationManager();
   }
 
   @override
@@ -59,6 +57,14 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void refreshData() async {
+    var eventClient = new EventClient();
+    await eventClient.loadData(forceLoad: true);
+    setState(() {
+      upcomingEvent = eventClient.getUpcomingEvents();
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -67,6 +73,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return new EventList(events: upcomingEvent);
+    return new EventList(events: upcomingEvent, onRefreshPull: refreshData);
   }
 }
