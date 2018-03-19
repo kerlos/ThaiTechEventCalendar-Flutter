@@ -7,19 +7,22 @@ final String columnId = "id";
 final String columnEventId = "event_id";
 final String columnDate = "date";
 final String columnFinished = "is_finished";
+final String columnRemindOffset = "remind_offset";
 
 class NotificationData {
   int id;
   String eventId;
   DateTime date;
+  int remindOffset;
   bool isFinished;
 
-  NotificationData();
+  NotificationData(this.date,this.remindOffset, this.eventId, this.isFinished);
 
   NotificationData.fromMap(Map map) {
     id = map[columnId];
     eventId = map[columnEventId];
     date = new DateTime.fromMillisecondsSinceEpoch(map[columnDate]);
+    remindOffset = map[columnRemindOffset];
     isFinished = map[columnFinished] == 1;
   }
 
@@ -27,6 +30,7 @@ class NotificationData {
     Map map = {
       columnEventId: eventId,
       columnDate: date.millisecondsSinceEpoch,
+      columnRemindOffset: remindOffset,
       columnFinished: isFinished == true ? 1 : 0
     };
 
@@ -50,9 +54,14 @@ class NotificationProvider {
             $columnId INTEGER PRIMARY KEY,
             $columnEventId TEXT NOT NULL UNIQUE,
             $columnDate INTEGER NOT NULL,
+            $columnRemindOffset INTEGER NOT NULL,
             $columnFinished INTEGER DEFAULT 0
           )""");
     });
+  }
+
+  void reset() {
+    deleteDatabase(path);
   }
 
   Future<NotificationData> insert(NotificationData data) async {
@@ -62,7 +71,7 @@ class NotificationProvider {
 
   Future<NotificationData> getNotification(String eventId) async {
     List<Map> maps = await db.query(table,
-        columns: [columnId, columnEventId, columnDate, columnFinished],
+        columns: [columnId, columnEventId, columnDate, columnRemindOffset, columnFinished],
         where: "$columnEventId = ?",
         whereArgs: [eventId]);
 

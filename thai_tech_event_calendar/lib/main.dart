@@ -33,6 +33,7 @@ class AppState extends State<App> {
         title: 'Thai Tech Event',
         theme: new ThemeData(
           primarySwatch: Colors.blue,
+          fontFamily: "Prompt"
         ),
         home: new HomePage(title: 'Thai Tech Event'));
   }

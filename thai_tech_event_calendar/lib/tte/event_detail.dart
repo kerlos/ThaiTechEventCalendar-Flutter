@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:developer';
+import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -12,6 +14,7 @@ import '../models/event/notification.dart';
 import '../models/event/time.dart';
 import 'event_client.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:android_alarm_manager/android_alarm_manager.dart';
 
 class EventDetail extends StatefulWidget {
   final Event event;
@@ -26,6 +29,7 @@ class EventDetail extends StatefulWidget {
 class EventDetailState extends State<EventDetail> {
   final Event event;
   EventDetailState(this.event);
+  List<int> reminds = [30,60,180,360,720,1440,0];
   NotificationManager notiManager = new NotificationManager();
 
   void launchUrl(String url) async {
@@ -49,6 +53,25 @@ class EventDetailState extends State<EventDetail> {
     });
   }
 
+  String getNotificationRemindText(int remind) {
+    switch(remind){
+      case 30:
+        return "30 Minutes before";
+      case 60:
+        return "1 Hour before";
+      case 180:
+        return "3 Hours before";
+      case 360:
+        return "6 Hours before";
+      case 720:
+        return "12 Hours before";
+      case 1440:
+        return "1 Day before";
+      default:
+        return "Never";
+    }
+  }
+
   String parseLinkDetail(Link link) {
     var detail = "";
     if (link.detail != "") {
@@ -67,7 +90,7 @@ class EventDetailState extends State<EventDetail> {
   IconData getNotificationIcon() {
     if(notification == null) {
       return FontAwesomeIcons.bellO;
-    } else if(notification.isFinished) {
+    } else if(notification.isFinished || notification.remindOffset == 0) {
       return FontAwesomeIcons.bellO;
     } else {
       return FontAwesomeIcons.bell;
@@ -86,41 +109,54 @@ class EventDetailState extends State<EventDetail> {
   }
   NotificationData notification;
 
-  void onNotificationPress() {
-    setState(() {
-      if(notification == null || notification.isFinished) {
-        activateNotification();
-      } else {
-        deactivateNotification();
-      }
-    });
-  }
-
-  void activateNotification() {
+  void activateNotification(int remind) async {
     if(notification == null){
-      notification = new NotificationData();
-      notification.date = event.startDate;
-      notification.eventId = event.id;
+      notification = new NotificationData(event.startDate,remind,event.id,false);
+      await notiManager.notifications.open();
+      await notiManager.notifications.insert(notification);
+      await notiManager.notifications.close();
+
+    }
+    else {
       notification.isFinished = false;
-      notiManager.notifications.insert(notification);
-    }else {
-      if(notification.date.difference(new DateTime.now()).isNegative) {
-        notification.isFinished = false;
-      }
+      notification.remindOffset = remind;
+      await notiManager.notifications.open();
+      await notiManager.notifications.update(notification);
+      await notiManager.notifications.close();
     }
   }
 
-  void deactivateNotification() {
+  void deactivateNotification(int remind) async {
     notification.isFinished = true;
-    notiManager.notifications.open();
-    notiManager.notifications.update(notification);
-    notiManager.notifications.close();
+    await notiManager.notifications.open();
+    await notiManager.notifications.update(notification);
+    await notiManager.notifications.close();
+  }
+
+  void updateNotification(int remind) async {
+    notification.remindOffset = remind;
+    await notiManager.notifications.open();
+    await notiManager.notifications.update(notification);
+    await notiManager.notifications.close();
+  }
+
+  void _setNotification(int remind) {
+    //TODO Add working local notification
+    setState(() {
+      if (notification == null || notification.isFinished) {
+        activateNotification(remind);
+      }
+      else if (notification.remindOffset != remind){
+        updateNotification(remind);
+      }
+      else if (remind == 0) {
+        deactivateNotification(remind);
+      }
+    });
   }
   @override
   Widget build(BuildContext context) {
     var theme = Theme.of(context);
-    var textTheme = theme.textTheme.apply(fontFamily: "Prompt");
-    theme = theme.copyWith(textTheme: textTheme);
     return new Scaffold(
         appBar: new AppBar(
           title: new Text(widget.event.title),
@@ -129,9 +165,29 @@ class EventDetailState extends State<EventDetail> {
             onPressed: () => Navigator.of(context).pop(),
           ),
           actions: <Widget>[
-            new IconButton(
-              icon: new Icon(getNotificationIcon()),
-              onPressed: onNotificationPress,
+            new PopupMenuButton<int>(
+              onSelected: _setNotification,
+              icon:  new Icon(getNotificationIcon()),
+              itemBuilder: (BuildContext context) {
+                return reminds.map((int remind)  {
+                  return new PopupMenuItem<int>(
+                    value: remind,
+                    child: new Row(
+                      children: <Widget>[
+                        new Radio(
+                          onChanged: _setNotification,
+                          groupValue: notification != null && notification.remindOffset != null ? notification.remindOffset : 0,
+                          value: remind,
+                        ),
+                        new Text(
+                          getNotificationRemindText(remind),
+                          textAlign: TextAlign.left,
+                        )
+                      ],
+                    )
+                  );
+                }).toList();
+              },
             )
           ],
         ),
